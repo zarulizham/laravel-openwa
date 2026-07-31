@@ -1,68 +1,92 @@
-# :package_description
+# Laravel OpenWA
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://github.com/spatie/package-skeleton-laravel/actions/workflows/run-tests.yml/badge.svg)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://github.com/spatie/package-skeleton-laravel/actions/workflows/fix-php-code-style-issues.yml/badge.svg)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/zarulizham/laravel-openwa.svg?style=flat-square)](https://packagist.org/packages/zarulizham/laravel-openwa)
+[![Total Downloads](https://img.shields.io/packagist/dt/zarulizham/laravel-openwa.svg?style=flat-square)](https://packagist.org/packages/zarulizham/laravel-openwa)
 
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+A Laravel wrapper for the [OpenWA](https://openwa.prooffice.com.my/api/docs) WhatsApp gateway API — list sessions, send text/image/document messages, and a `whatsapp` Notification channel.
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require :vendor_slug/:package_slug
+composer require zarulizham/laravel-openwa
 ```
 
-You can publish and run the migrations with:
+Publish the config file:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
-php artisan migrate
+php artisan vendor:publish --tag="openwa-config"
 ```
 
-You can publish the config file with:
+Set your OpenWA server details in `.env`:
 
-```bash
-php artisan vendor:publish --tag=":package_slug-config"
+```
+OPENWA_BASE_URL=https://openwa.prooffice.com.my/api
+OPENWA_API_KEY=your-api-key
+OPENWA_TIMEOUT=30
+OPENWA_SESSION_NAME=my-bot
 ```
 
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
-```
+`OPENWA_SESSION_NAME` is optional. When set, `getLatestReadySessionId()` (and any send call that omits an explicit session id) only considers the session with that `name` — instead of the most recently connected `ready` session across all of them. The resolved session id is cached for 3 hours.
 
 ## Usage
 
 ```php
-$:variable = new VendorName\Skeleton();
-echo $:variable->echoPhrase('Hello, VendorName!');
+use ZarulIzham\OpenWa\Facades\OpenWa;
+
+// List all sessions
+$sessions = OpenWa::getSessions();
+
+// Get the id of the most recently connected session with status "ready"
+$sessionId = OpenWa::getLatestReadySessionId();
+
+// Send a text message (auto-resolves the latest ready session if omitted)
+OpenWa::sendText('628123456789@c.us', 'Hello from OpenWA!');
+
+// Send an image
+OpenWa::sendImage('628123456789@c.us', [
+    'url' => 'https://example.com/image.jpg',
+    'caption' => 'Check this out!',
+]);
+
+// Send a document
+OpenWa::sendDocument('628123456789@c.us', [
+    'url' => 'https://example.com/invoice.pdf',
+    'filename' => 'invoice.pdf',
+]);
+```
+
+### Notifications
+
+Add a `routeNotificationForWhatsapp()` method to your notifiable model:
+
+```php
+public function routeNotificationForWhatsapp(): string
+{
+    return $this->phone.'@c.us';
+}
+```
+
+Implement `ZarulIzham\OpenWa\Notifications\WhatsAppNotification` on your notification and return an `OpenWaMessage` from `toWhatsApp()`:
+
+```php
+use Illuminate\Notifications\Notification;
+use ZarulIzham\OpenWa\Notifications\OpenWaMessage;
+use ZarulIzham\OpenWa\Notifications\WhatsAppNotification;
+
+class OrderShipped extends Notification implements WhatsAppNotification
+{
+    public function via($notifiable): array
+    {
+        return ['whatsapp'];
+    }
+
+    public function toWhatsApp($notifiable): OpenWaMessage
+    {
+        return OpenWaMessage::text("Your order #{$this->order->id} has shipped!");
+    }
+}
 ```
 
 ## Testing
@@ -85,7 +109,7 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [:author_name](https://github.com/:author_username)
+- [Zarul Izham](https://github.com/zarulizham)
 - [All Contributors](../../contributors)
 
 ## License

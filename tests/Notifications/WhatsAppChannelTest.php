@@ -16,6 +16,11 @@ class TestWhatsAppNotifiable
     }
 }
 
+class TestUnroutableNotifiable
+{
+    use Notifiable;
+}
+
 class TestTextNotification extends Notification implements WhatsAppNotification
 {
     public function via($notifiable): array
@@ -63,6 +68,10 @@ it('sends a text notification through the openwa channel', function () {
             && $request['text'] === 'Order shipped!';
     });
 });
+
+it('throws when the notifiable has no routeNotificationForWhatsapp method', function () {
+    (new TestUnroutableNotifiable)->notify(new TestTextNotification);
+})->throws(InvalidArgumentException::class, TestUnroutableNotifiable::class.' must define a routeNotificationForWhatsapp() method to be notified via the openwa channel.');
 
 it('sends an image notification through the openwa channel', function () {
     Http::fake([

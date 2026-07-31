@@ -21,6 +21,12 @@ class WhatsAppChannel
             );
         }
 
+        if (! method_exists($notifiable, 'routeNotificationForWhatsapp')) {
+            throw new InvalidArgumentException(
+                $notifiable::class.' must define a routeNotificationForWhatsapp() method to be notified via the openwa channel.'
+            );
+        }
+
         $chatId = $notifiable->routeNotificationFor('whatsapp', $notification);
 
         if (! str_ends_with($chatId, '@c.us') && ! str_ends_with($chatId, '@g.us')) {

@@ -79,7 +79,7 @@ class OrderShipped extends Notification implements WhatsAppNotification
 {
     public function via($notifiable): array
     {
-        return ['whatsapp'];
+        return ['openwa'];
     }
 
     public function toWhatsApp($notifiable): OpenWaMessage

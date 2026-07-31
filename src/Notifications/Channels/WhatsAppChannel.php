@@ -17,11 +17,15 @@ class WhatsAppChannel
     {
         if (! $notification instanceof WhatsAppNotification) {
             throw new InvalidArgumentException(
-                $notification::class.' must implement '.WhatsAppNotification::class.' to be sent via the whatsapp channel.'
+                $notification::class.' must implement '.WhatsAppNotification::class.' to be sent via the openwa channel.'
             );
         }
 
         $chatId = $notifiable->routeNotificationFor('whatsapp', $notification);
+
+        if (! str_ends_with($chatId, '@c.us') && ! str_ends_with($chatId, '@g.us')) {
+            $chatId .= '@c.us';
+        }
 
         $message = $notification->toWhatsApp($notifiable);
 

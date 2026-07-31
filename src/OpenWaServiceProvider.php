@@ -30,7 +30,7 @@ class OpenWaServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        $this->app->make(ChannelManager::class)->extend('whatsapp', function ($app) {
+        $this->app->make(ChannelManager::class)->extend('openwa', function ($app) {
             return $app->make(WhatsAppChannel::class);
         });
     }

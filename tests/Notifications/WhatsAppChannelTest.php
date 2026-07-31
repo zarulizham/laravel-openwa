@@ -20,7 +20,7 @@ class TestTextNotification extends Notification implements WhatsAppNotification
 {
     public function via($notifiable): array
     {
-        return ['whatsapp'];
+        return ['openwa'];
     }
 
     public function toWhatsApp($notifiable): OpenWaMessage
@@ -33,7 +33,7 @@ class TestImageNotification extends Notification implements WhatsAppNotification
 {
     public function via($notifiable): array
     {
-        return ['whatsapp'];
+        return ['openwa'];
     }
 
     public function toWhatsApp($notifiable): OpenWaMessage
@@ -47,7 +47,7 @@ beforeEach(function () {
     config(['openwa.api_key' => 'test-key']);
 });
 
-it('sends a text notification through the whatsapp channel', function () {
+it('sends a text notification through the openwa channel', function () {
     Http::fake([
         'openwa.test/api/sessions/sess_1/messages/send-text' => Http::response([
             'messageId' => 'msg_1',
@@ -64,7 +64,7 @@ it('sends a text notification through the whatsapp channel', function () {
     });
 });
 
-it('sends an image notification through the whatsapp channel', function () {
+it('sends an image notification through the openwa channel', function () {
     Http::fake([
         'openwa.test/api/sessions/sess_1/messages/send-image' => Http::response([
             'messageId' => 'msg_2',
